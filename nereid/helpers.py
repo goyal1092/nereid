@@ -327,8 +327,8 @@ def get_website_from_host(http_host):
     return http_host.split(':')[0]
 
 
-def make_crumbs(browse_record, endpoint, add_home=True, max_depth=10,
-                field_map_changes=None, root_ids=None):
+def make_crumbs(browse_record, endpoint, params={}, add_home=True,
+                max_depth=10, field_map_changes=None, root_ids=None):
     """
     Makes bread crumbs for a given browse record based on the field
     parent of the browse record
@@ -351,7 +351,6 @@ def make_crumbs(browse_record, endpoint, add_home=True, max_depth=10,
     """
     field_map = dict(
         parent_field='parent',
-        uri_field='uri',
         title_field='title',
     )
     if field_map_changes is not None:
@@ -362,8 +361,13 @@ def make_crumbs(browse_record, endpoint, add_home=True, max_depth=10,
     def recurse(node, level=1):
         if level > max_depth or not node:
             return []
+
+        endpoint_params = {
+            key: getattr(node, node_attr)
+            for key, node_attr in params.iteritems()
+        }
         data_pair = (
-            url_for(endpoint, uri=getattr(node, field_map['uri_field'])),
+            url_for(endpoint, **endpoint_params),
             getattr(node, field_map['title_field'])
         )
         if node.id in root_ids:
